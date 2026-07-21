@@ -1,0 +1,8 @@
+__pycache__/
+*.py[cod]
+
+# Keep CAD work out of the repo — except the generated demo part.
+*.dxf
+*.dwg
+*.f3d
+!examples/demo_part.dxf
