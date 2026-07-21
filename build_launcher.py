@@ -83,30 +83,25 @@ def pythonw() -> str:
     return str(windowed if windowed.exists() else exe)
 
 
-def make_icon(path: Path) -> bool:
-    """Draw a small flat-pattern glyph: white outline, dashed amber bend."""
+def make_icon() -> bool:
+    """(Re)generate docs/coons.ico. Needs Pillow; the icon is optional."""
     try:
-        from PIL import Image, ImageDraw
+        import make_icon as icon_module
     except ImportError:
         return False
-
-    size = 256
-    img = Image.new("RGBA", (size, size), (13, 27, 42, 255))
-    d = ImageDraw.Draw(img)
-    d.rounded_rectangle([28, 68, 228, 188], radius=6, outline=(255, 255, 255, 255), width=7)
-    for x in (88, 168):  # dashed bend lines
-        for y in range(74, 184, 26):
-            d.line([(x, y), (x, y + 14)], fill=(255, 209, 102, 255), width=7)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    img.save(path, sizes=[(16, 16), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)])
-    return True
+    try:
+        icon_module.main()
+    except Exception as exc:  # Pillow missing, etc.
+        print(f"icon skipped: {exc}")
+        return False
+    return ICON.exists()
 
 
 def main() -> int:
     if sys.platform != "win32":
         raise SystemExit("Windows only.")
 
-    has_icon = make_icon(ICON)
+    has_icon = make_icon()
     out = HERE / "coons.exe"
 
     with tempfile.TemporaryDirectory() as tmp:

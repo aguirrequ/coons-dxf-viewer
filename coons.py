@@ -100,6 +100,43 @@ def style_for(layer: str) -> dict:
     return LAYER_STYLES[-1][1]
 
 
+def set_taskbar_identity() -> None:
+    """Claim our own taskbar slot instead of inheriting Python's.
+
+    Windows groups taskbar buttons by AppUserModelID; without this the window
+    shows the Python icon no matter what icon the window itself carries. Must
+    run before any window is created.
+    """
+    if sys.platform != "win32":
+        return
+    try:
+        import ctypes
+
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("Coons.DXFViewer")
+    except Exception:
+        pass
+
+
+def apply_window_icon(fig) -> None:
+    icon = Path(__file__).resolve().parent / "docs" / "coons.ico"
+    if not icon.exists():
+        return
+    window = getattr(fig.canvas.manager, "window", None)
+    if window is None:
+        return
+    try:  # Tk backends
+        window.iconbitmap(default=str(icon))
+        return
+    except Exception:
+        pass
+    try:  # Qt backends
+        from matplotlib.backends.qt_compat import QtGui
+
+        window.setWindowIcon(QtGui.QIcon(str(icon)))
+    except Exception:
+        pass
+
+
 def pick_file() -> Path | None:
     import tkinter as tk
     from tkinter import filedialog
@@ -209,8 +246,10 @@ def main() -> int:
         return 1
 
     state = {"bg": 0, "extents": True, "legend": True}
+    set_taskbar_identity()
     fig, ax = plt.subplots(figsize=(12, 8))
     fig.canvas.manager.set_window_title(f"Coons DXF Viewer — {path.name}")
+    apply_window_icon(fig)
     optional_labels = {s["label"] for _, s in LAYER_STYLES if s.get("optional")}
 
     def draw() -> None:

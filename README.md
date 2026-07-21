@@ -65,6 +65,19 @@ dialog and browse to `coons.exe`.
 | `r` | reset view |
 | `q` | quit |
 
+## Icon
+
+`make_icon.py` generates `docs/coons.ico` from actual geometry: an icosahedron
+projected orthographically along a 3-fold axis, giving the hexagonal silhouette.
+Edges hidden behind the solid are dashed, following the drafting convention the
+viewer itself uses. Each icon size is drawn at its own scale — small tiles get
+proportionally heavier strokes and drop the hidden edges — rather than
+downsampling one master, so the 16 px tile stays legible.
+
+`build_launcher.py` regenerates it and embeds it in `coons.exe`; `coons.py`
+applies it to the window and sets an explicit AppUserModelID so the taskbar
+shows this icon instead of Python's.
+
 ## Layer styling
 
 Entities are styled by layer name, matched case-insensitively against the
