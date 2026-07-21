@@ -29,18 +29,29 @@ On Windows you can also drag a `.dxf` onto `coons.bat`.
 ### Open .dxf files by double-clicking (Windows)
 
 ```
-python install_association.py
+python build_launcher.py        # builds coons.exe (~12 KB)
+python install_association.py   # registers it for .dxf, HKCU only
 ```
 
-That registers a `Coons.DXFViewer` ProgID under `HKEY_CURRENT_USER` — per-user,
-no admin, and undoable with `--uninstall`. It deliberately does *not* seize the
-default association: Windows guards the default app behind a hashed `UserChoice`
-key that only the shell may write. Finish the job once by hand:
+`build_launcher.py` compiles a small C# stub with the .NET Framework compiler
+that ships with Windows — no PyInstaller, nothing to install. The stub launches
+`coons.py` through `pythonw.exe`, so there's no console window flash, and it
+locates the script next to itself so you can move the folder freely.
+
+The real `.exe` matters: Windows' *Open with* dialog will not list a handler
+whose command is a bare interpreter, which is why a pure-registry approach
+leaves the app invisible.
+
+`install_association.py` writes only to `HKEY_CURRENT_USER` (no admin) and is
+undoable with `--uninstall`. It deliberately does *not* seize the default
+association — Windows guards the default app behind a hashed `UserChoice` key
+that only the shell itself may write. Finish the job once by hand:
 
 > right-click any `.dxf` → **Open with** → **Choose another app** →
 > **Coons DXF Viewer** → tick *Always use this app*
 
-It launches through `pythonw.exe`, so there's no console window flash.
+If it still isn't listed, choose **Look for another app on this PC** in that
+dialog and browse to `coons.exe`.
 
 ## Controls
 

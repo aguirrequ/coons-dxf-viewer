@@ -1,6 +1,9 @@
 __pycache__/
 *.py[cod]
 
+# Built by build_launcher.py.
+coons.exe
+
 # Keep CAD work out of the repo — except the generated demo part.
 *.dxf
 *.dwg
