@@ -118,17 +118,37 @@ def set_taskbar_identity() -> None:
 
 
 def apply_window_icon(fig) -> None:
+    """Replace matplotlib's own window icon with ours.
+
+    matplotlib sets its logo via Tk's `iconphoto`, which outranks `iconbitmap`
+    on an existing window — so overriding it means using `iconphoto` too, with
+    the PhotoImages kept alive for as long as the window is.
+    """
     icon = Path(__file__).resolve().parent / "docs" / "coons.ico"
     if not icon.exists():
         return
     window = getattr(fig.canvas.manager, "window", None)
     if window is None:
         return
+
     try:  # Tk backends
-        window.iconbitmap(default=str(icon))
+        from PIL import Image, ImageTk
+
+        images = []
+        for size in (256, 64, 48, 32, 16):  # largest first, as Tk expects
+            frame = Image.open(icon)
+            frame.size = (size, size)
+            images.append(ImageTk.PhotoImage(frame.convert("RGBA"), master=window))
+        window.iconphoto(False, *images)
+        window._coons_icons = images  # without this they are garbage collected
+        try:
+            window.iconbitmap(default=str(icon))  # also covers child dialogs
+        except Exception:
+            pass
         return
     except Exception:
         pass
+
     try:  # Qt backends
         from matplotlib.backends.qt_compat import QtGui
 
